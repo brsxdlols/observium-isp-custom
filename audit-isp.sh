@@ -25,6 +25,26 @@ if [[ -r /etc/cron.d/observium ]]; then echo 'OK: cron nativo Observium existe';
 if command -v php >/dev/null 2>&1 && [[ -r "$OBS/config.php" ]]; then
   php -l "$OBS/config.php" >/dev/null && echo 'OK: config.php sintaxe valida' || { echo 'PENDENTE: config.php sintaxe'; count_missing=$((count_missing+1)); }
 fi
+echo '===== AUDITORIA DE COLETA RIB/PPPoE ====='
+if [[ -f "$OBS/isp-collectors/collect.py" ]]; then
+  echo 'OK: ingestor ISP presente'
+else
+  echo 'PENDENTE: ingestor ISP nao instalado (pode existir coletor legado independente)'
+  count_missing=$((count_missing+1))
+fi
+if [[ -r /etc/observium-isp/sources.json ]]; then
+  echo 'OK: fontes JSON configuradas (validar conteudo no --collectors-check)'
+else
+  echo 'PENDENTE: fontes de coleta real nao configuradas para ingestor novo'
+  count_missing=$((count_missing+1))
+fi
+if [[ -f /etc/cron.d/observium-isp-collectors ]]; then
+  echo 'OK: cron do ingestor ISP presente (execucao depende das fontes)'
+else
+  echo 'PENDENTE: cron do ingestor ISP nao instalado (verificar cron legado)'
+  count_missing=$((count_missing+1))
+fi
+echo 'AVISO: snapshots/SQLite existentes nao comprovam atualizacao periodica nem validade SNMP/API.'
 echo "Auditoria concluida. Pendencias detectadas: $count_missing"
 echo 'ATENCAO: auditoria verifica presenca/marcadores, nao testa SNMP, coleta efetiva ou funcionamento no navegador.'
 exit 0
