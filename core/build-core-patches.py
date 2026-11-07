@@ -34,12 +34,25 @@ def sha(data):
 
 
 def members(tar):
-    # Only regular entries; reject duplicated paths to avoid ambiguity.
+    # Official Observium archives contain legitimate symlinks outside the
+    # five selected source files (e.g. observium/observium-wrapper).
+    # We NEVER follow links: only regular file members are indexed and read.
+    # Reject unsafe names for ALL entries, including ignored links.
     out = {}
+    seen = set()
+    required = {'observium/' + rel for rel in FILES}
+    required.update({'files/' + rel for rel in FILES})
+    required.add('manifest.txt')
     for entry in tar:
         name = PurePosixPath(entry.name)
-        if entry.name.startswith('/') or '..' in name.parts or entry.issym() or entry.islnk():
-            raise ValueError('Archive contains unsafe path/link: ' + entry.name)
+        if entry.name.startswith('/') or '..' in name.parts or '\\' in entry.name:
+            raise ValueError('Archive contains unsafe path: ' + entry.name)
+        if entry.name in required:
+            if entry.name in seen:
+                raise ValueError('Duplicate required archive path: ' + entry.name)
+            seen.add(entry.name)
+            if not entry.isfile() or entry.issym() or entry.islnk():
+                raise ValueError('Required source is not a regular file: ' + entry.name)
         if entry.isfile():
             if entry.name in out:
                 raise ValueError('Duplicate archive path: ' + entry.name)
