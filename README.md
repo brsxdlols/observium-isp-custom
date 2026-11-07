@@ -39,3 +39,31 @@ sudo bash base/instalar-observium.sh
 ## Licenças
 
 Observium Community Edition tem licença própria baseada na QPL. O instalador baixa a versão Community diretamente do site oficial. Este repositório não redistribui o núcleo Observium modificado como um pacote independente.
+
+## Instalador unificado — fase incremental
+
+A entrada `install.sh` permite duas modalidades, **instalação nova** com `--new` ou **aplicação em instalação existente** com `--apply`. Sem argumento, usa `--check` (somente leitura). Requer Debian 12 para `--new` e privilégios de root.
+
+Antes de usar em produção, execute uma verificação:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main/install.sh -o /root/observium-isp-install.sh
+bash -n /root/observium-isp-install.sh
+bash /root/observium-isp-install.sh --check
+```
+
+Aplicar **somente os módulos próprios e o registro de grupos**, após conferir o resultado:
+
+```bash
+bash /root/observium-isp-install.sh --apply
+```
+
+Instalação **nova**, exclusivamente em um Debian 12 sem `/opt/observium`:
+
+```bash
+bash /root/observium-isp-install.sh --new
+```
+
+`--new` utiliza o instalador-base que já era usado no ambiente de origem, acrescenta a dependência SQLite para PHP e aplica os módulos após a instalação. **Ainda não reproduz a tela personalizada inteira**: as integrações nativas de menus, widgets, JavaScript e coletores estão em desenvolvimento; consulte `docs/STATUS.md`.
+
+O aplicador cria backup em `/root/observium-isp-backups/`, valida os arquivos PHP, impede substituição silenciosa de código diferente e não executa mudanças de banco, RRD nem tarefas cron. **É intencionalmente conservador**: um arquivo já existente e diferente interrompe a operação antes de qualquer modificação.
