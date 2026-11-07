@@ -67,3 +67,14 @@ bash /root/observium-isp-install.sh --new
 `--new` utiliza o instalador-base que já era usado no ambiente de origem, acrescenta a dependência SQLite para PHP e aplica os módulos após a instalação. **Ainda não reproduz a tela personalizada inteira**: as integrações nativas de menus, widgets, JavaScript e coletores estão em desenvolvimento; consulte `docs/STATUS.md`.
 
 O aplicador cria backup em `/root/observium-isp-backups/`, valida os arquivos PHP, impede substituição silenciosa de código diferente e não executa mudanças de banco, RRD nem tarefas cron. **É intencionalmente conservador**: um arquivo já existente e diferente interrompe a operação antes de qualquer modificação.
+
+## Ingestor RIB / PPPoE (fase incremental)
+
+Foi acrescentado `install-collectors.sh` com os modos `--collectors-check` e `--collectors-apply` na entrada `install.sh`. Em instalação nova, `--apply` instala o ingestor e um cron condicional. **A obtenção de dados diretamente dos equipamentos ainda não está implementada:** o ingestor somente recebe snapshots locais em JSON produzidos por um adaptador externo. Não solicita senhas, não presume OIDs de fabricante e não gera contagens fictícias. Leia [docs/COLLECTORS.md](docs/COLLECTORS.md) antes de ativar. O servidor de origem já possui coletores e histórico legados que não devem ser substituídos automaticamente.
+
+```bash
+bash install.sh --collectors-check
+bash install.sh --collectors-apply
+```
+
+Os testes unitários isolados estão em `tests/test_collectors.py`. A ausência de `/etc/observium-isp/sources.json` mantém o cron sem coleta. Uma instalação nova exige configuração de fontes reais e testes com os equipamentos específicos para exibir valores atualizados.
