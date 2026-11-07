@@ -1,0 +1,15 @@
+config.php
+.env
+.env.*
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+*.rrd
+*.log
+*.key
+*.pem
+private/
+backups/
+rrd/
+logs/
