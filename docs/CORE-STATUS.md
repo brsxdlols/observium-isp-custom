@@ -31,3 +31,20 @@ bash /root/observium-isp-install.sh --core-export
 Os cinco arquivos são `html/includes/navbar.inc.php`, `html/ajax/widget.php`, `html/includes/dashboard-generate.inc.php`, `html/pages/dashboard.inc.php` e `html/js/dashboard.js`. É necessário comparar o snapshot privado do ambiente funcional com o núcleo *pristine* da **mesma revisão**, e publicar apenas patches específicos que não contenham segredos. Se a pré-imagem esperada não corresponder, não aplicar o patch. Até obter a pré-imagem exata e revisar os diffs, **nenhuma rotina automatizada de patch do núcleo está habilitada**.
 
 A captura privada não indica que patches estejam prontos ou validados; executar em produção apenas `--core-check` ou `--core-export`. Arquivos exportados podem conter identificadores internos embutidos no código — revise antes de compartilhar.
+
+
+## Gerar rascunhos privados dos cinco patches
+
+Depois de executar `--core-export` e preservar o arquivo no servidor, rode:
+
+```bash
+bash install.sh --core-build
+```
+
+O processo usa `ISP_CORE_BASELINE` se fornecido; por padrão tenta o pacote oficial sem alterações em `/opt/observium-community-latest.tar.gz`. Se não existir, baixa o pacote Community do site oficial para diretório temporário, **sem extrair em /opt/observium**. `ISP_CORE_EVIDENCE` permite escolher um pacote privado de evidências; sem ele, será escolhido o mais recente em `/root/observium-isp-exports/`.
+
+Um gerador Python confere os SHA-256 dos cinco arquivos personalizados contra `manifest.txt` e compara com os mesmos caminhos do pacote oficial; gera cinco diffs privados `.patch` e um `manifest.json` contendo hashes de origem e destino e estatística de alterações. Salva-os em `/root/observium-isp-exports/core-patch-review-*/` (permissão restrita) e não os aplica.
+
+**Restrição:** o pacote oficial `latest` pode ser outra revisão em relação à instalação de origem. A comparação não comprova igualdade de versões; a versão-base precisa ser verificada antes de transformar esses rascunhos em patches instaláveis. Os diffs podem conter identificadores, endereços internos e trechos do código Observium; não publique o diretório de revisão no GitHub. O repositório contém somente o **gerador**, e não os patches confidenciais.
+
+A publicação de patches finais depende de verificar a pré-imagem por SHA-256 e revisar manualmente cada diff. Aplicação automática e rollback de patches do núcleo **ainda não estão habilitados**.
