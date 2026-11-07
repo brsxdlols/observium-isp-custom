@@ -78,3 +78,16 @@ bash install.sh --collectors-apply
 ```
 
 Os testes unitários isolados estão em `tests/test_collectors.py`. A ausência de `/etc/observium-isp/sources.json` mantém o cron sem coleta. Uma instalação nova exige configuração de fontes reais e testes com os equipamentos específicos para exibir valores atualizados.
+
+## Coletores PHP nativos publicados (novembro/2026)
+
+O repositório agora contém os quatro coletores PHP usados no ambiente de origem, adaptados para configuração privada (não se publicam IPs, hostnames e IDs de equipamentos). Estão em `native/isp-rib/collect.php` e `native/isp-pppoe/{collect.php,collect-multi.php,export.php}`.
+
+- `bash install.sh --native-check`: somente leitura, analisa diferenças e configuração.
+- `bash install.sh --native-apply`: instala apenas arquivos ausentes e não sobrescreve versões locais diferentes.
+- `--new`: prepara os arquivos, mas não ativa cron antes da definição e verificação dos dispositivos.
+- Não execute `--native-apply` em produção quando coletores locais já estão funcionando; o instalador deve bloquear diferenças.
+
+As fontes SNMP são dispositivos cadastrados no próprio Observium, com configurações particulares no arquivo local `/etc/observium-isp/native-collectors.php`. O cron deve ser habilitado somente após configurar IDs, testar o acesso SNMP e conferir os logs. Veja [docs/NATIVE-COLLECTORS.md](docs/NATIVE-COLLECTORS.md). O ingestor JSON em `collectors/` é uma alternativa distinta; **não execute ambos sobre os mesmos arquivos**.
+
+**Situação real:** código dos coletores portado e verificado sintaticamente; ainda não testado num Observium limpo ligado a equipamentos reais. Menus, alertas e modais nativos também exigem validação final de integração para a instalação integral.
