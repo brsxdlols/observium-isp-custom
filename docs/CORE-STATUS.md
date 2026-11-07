@@ -19,3 +19,15 @@ O comando verifica arquivos, marcadores e sintaxe; não modifica banco, cron ou 
 É necessário produzir **patches incrementais verificados contra a versão exata do Observium CE** (principalmente `html/ajax/widget.php`, `html/js/dashboard.js`, `html/includes/navbar.inc.php`). Uma versão nova do Observium pode reorganizar esses arquivos; a aplicação deve falhar de forma segura em caso de pré-imagem diferente, com backup e rollback. Não copie os arquivos inteiros do servidor atual para cima de outra versão.
 
 A auditoria confirma apenas presença de marcadores e sintaxe, não funcionamento no navegador ou autenticidade do binário. Testes futuros precisam cobrir respostas AJAX, sessão autenticada, persistência do modal e execução real dos três cron nativos RIB/PPPoE.
+## Preparação dos patches por revisão exata — etapa de exportação
+
+O modo `--core-export` foi acrescentado ao instalador. Ele extrai **somente os cinco arquivos nativos relacionados ao painel** e grava um arquivo TAR privado com manifesto SHA-256, no diretório `/root/observium-isp-exports/`. Não copia `config.php`, bases SQL/SQLite, RRD, cron nem logs; não altera o Observium. O TAR contém código-fonte nativo da instalação e **não deve ser publicado diretamente em um GitHub público**.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main/install.sh -o /root/observium-isp-install.sh
+bash /root/observium-isp-install.sh --core-export
+```
+
+Os cinco arquivos são `html/includes/navbar.inc.php`, `html/ajax/widget.php`, `html/includes/dashboard-generate.inc.php`, `html/pages/dashboard.inc.php` e `html/js/dashboard.js`. É necessário comparar o snapshot privado do ambiente funcional com o núcleo *pristine* da **mesma revisão**, e publicar apenas patches específicos que não contenham segredos. Se a pré-imagem esperada não corresponder, não aplicar o patch. Até obter a pré-imagem exata e revisar os diffs, **nenhuma rotina automatizada de patch do núcleo está habilitada**.
+
+A captura privada não indica que patches estejam prontos ou validados; executar em produção apenas `--core-check` ou `--core-export`. Arquivos exportados podem conter identificadores internos embutidos no código — revise antes de compartilhar.
