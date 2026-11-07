@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -65,6 +65,17 @@ if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --collectors-check 
   case "$MODE" in
     --check|--collectors-check) bash "$TMP/collectors/install-collectors.sh" --check ;;
     --apply|--collectors-apply) bash "$TMP/collectors/install-collectors.sh" --apply ;;
+  esac
+fi
+
+# Native SNMP/PHP collectors from the operational Observium (no secrets hardcoded).
+# On existing systems, differences are protected; do not enable duplicate cron jobs.
+if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --native-check || "$MODE" == --native-apply ]]; then
+  fetch install-native-collectors.sh native/install-native-collectors.sh
+  bash -n "$TMP/native/install-native-collectors.sh"
+  case "$MODE" in
+    --check|--native-check) bash "$TMP/native/install-native-collectors.sh" --check ;;
+    --apply|--native-apply) bash "$TMP/native/install-native-collectors.sh" --apply ;;
   esac
 fi
 
