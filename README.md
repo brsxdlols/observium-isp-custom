@@ -91,3 +91,14 @@ O repositório agora contém os quatro coletores PHP usados no ambiente de orige
 As fontes SNMP são dispositivos cadastrados no próprio Observium, com configurações particulares no arquivo local `/etc/observium-isp/native-collectors.php`. O cron deve ser habilitado somente após configurar IDs, testar o acesso SNMP e conferir os logs. Veja [docs/NATIVE-COLLECTORS.md](docs/NATIVE-COLLECTORS.md). O ingestor JSON em `collectors/` é uma alternativa distinta; **não execute ambos sobre os mesmos arquivos**.
 
 **Situação real:** código dos coletores portado e verificado sintaticamente; ainda não testado num Observium limpo ligado a equipamentos reais. Menus, alertas e modais nativos também exigem validação final de integração para a instalação integral.
+
+## Compatibilidade do núcleo e dashboard avançado
+
+Para conferir a integração dos modais, filtros, AJAX e menus do dashboard antes de aplicar uma instalação nova:
+
+```bash
+bash install.sh --core-check
+```
+
+Também executamos essa validação ao final de `--check` e `--apply`; **retorno 4 significa núcleo incompleto**. O instalador não deve declarar instalação pronta quando esses recursos estiverem ausentes. Os patches correspondentes ainda precisam ser produzidos para a versão específica do Observium Community. O verificador não modifica arquivos ou banco. Consulte [docs/CORE-STATUS.md](docs/CORE-STATUS.md).
+
