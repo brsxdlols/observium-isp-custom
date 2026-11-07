@@ -1,0 +1,105 @@
+/* ISP_CATEGORY_VIEW_SWITCH_STYLE_V1 */
+
+/* ISP_CATEGORY_VIEW_POSITION_STYLE_V2 */
+
+.isp-category-view-standalone-v2 {
+  width: calc(100% - 30px) !important;
+  max-width: 1180px !important;
+  margin: 14px auto 12px auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+
+
+.isp-category-view-toolbar-v1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  padding: 12px 16px;
+  margin-bottom: 12px;
+
+  background: #ffffff;
+  border: 1px solid #dbe4eb;
+  border-radius: 7px;
+}
+
+.isp-category-view-label-v1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.isp-category-view-label-v1 strong {
+  font-size: 16px;
+  color: #17628c;
+}
+
+.isp-category-view-label-v1 span {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.isp-category-view-buttons-v1 {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.isp-category-view-option-v1 {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none !important;
+  color: #475569 !important;
+  background: #ffffff;
+  white-space: nowrap;
+}
+
+.isp-category-view-option-v1 + 
+.isp-category-view-option-v1 {
+  border-left: 1px solid #cbd5e1;
+}
+
+.isp-category-view-option-v1:hover {
+  background: #eff6ff;
+}
+
+.isp-category-view-option-v1.is-active {
+  background: #17628c;
+  color: #ffffff !important;
+}
+
+@media (max-width: 600px) {
+  .isp-category-view-toolbar-v1 {
+    align-items: stretch;
+  }
+
+  .isp-category-view-buttons-v1 {
+    width: 100%;
+  }
+
+  .isp-category-view-option-v1 {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+
+/* ISP_CATEGORY_VIEW_STANDALONE_V3 */
+.isp-category-view-standalone-v2 {
+    display: flex !important;
+    width: calc(100% - 30px) !important;
+    max-width: 1180px !important;
+    margin: 14px auto 12px !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    z-index: 2 !important;
+}

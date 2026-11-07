@@ -1,22 +1,47 @@
 #!/usr/bin/env bash
-# Entrada unificada: instalacao nova a partir do instalador-base ou verificacao/aplicacao incremental.
+# Observium ISP: new install, validation, or incremental application.
 set -Eeuo pipefail
 umask 077
-[[ $EUID == 0 ]] || { echo 'ERRO: execute como root.' >&2; exit 1; }
+[[ $EUID == 0 ]] || { echo 'Execute como root.' >&2; exit 1; }
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
-case "$MODE" in --new|--check|--apply) ;; *) echo 'Uso: bash install.sh [--new|--check|--apply]'; exit 2;; esac
-command -v curl >/dev/null || { echo 'ERRO: curl ausente.'; exit 1; }
+case "$MODE" in
+  --new|--check|--apply|--categories-check|--categories-apply) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply]'; exit 2 ;;
+esac
+command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
 trap 'rm -rf "$TMP"' EXIT
+
+fetch() {
+  local path="$1" dest="$2"
+  mkdir -p "$(dirname "$TMP/$dest")"
+  curl -fsSL --retry 2 "$RAW/$path" -o "$TMP/$dest"
+}
+
 if [[ "$MODE" == --new ]]; then
-  [[ ! -e /opt/observium ]] || { echo 'ERRO: /opt/observium existe; use --check ou --apply.'; exit 1; }
-  curl -fsSL --retry 2 "$RAW/base/instalar-observium.sh" -o "$TMP/base.sh"
+  [[ ! -e /opt/observium ]] || { echo '/opt/observium ja existe: use --check ou --apply'; exit 1; }
+  fetch base/instalar-observium.sh base.sh
   bash -n "$TMP/base.sh"
   bash "$TMP/base.sh"
   DEBIAN_FRONTEND=noninteractive apt-get install -y php8.2-sqlite3
   MODE=--apply
 fi
-curl -fsSL --retry 2 "$RAW/apply-isp.sh" -o "$TMP/apply.sh"
-bash -n "$TMP/apply.sh"
-bash "$TMP/apply.sh" "$MODE"
+
+if [[ "$MODE" == --check || "$MODE" == --apply ]]; then
+  fetch apply-isp.sh apply.sh
+  bash -n "$TMP/apply.sh"
+  bash "$TMP/apply.sh" "$MODE"
+fi
+
+if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --categories-check || "$MODE" == --categories-apply ]]; then
+  fetch install-category-ui.sh categories/install-category-ui.sh
+  fetch category-ui/category-view.js categories/category-ui/category-view.js
+  fetch category-ui/category-view.css categories/category-ui/category-view.css
+  fetch category-ui/navbar-custom.inc.php categories/category-ui/navbar-custom.inc.php
+  bash -n "$TMP/categories/install-category-ui.sh"
+  case "$MODE" in
+    --check|--categories-check) bash "$TMP/categories/install-category-ui.sh" --check ;;
+    --apply|--categories-apply) bash "$TMP/categories/install-category-ui.sh" --apply ;;
+  esac
+fi
