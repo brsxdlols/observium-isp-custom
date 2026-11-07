@@ -27,12 +27,20 @@ fi
 # Safe read-only checks; never extract the archive into /opt/observium.
 tar -tzf "$BASELINE" >/dev/null
 TMP_PY="$WORK/build-core-patches.py"
+# Pinned core builder: the immutable commit URL avoids stale CDN responses
+# from /main/ and prevents accidentally running a mismatched generator.
+BUILDER_REV="23a744b7e95ef1e456f95967bfb5bab0e2ff4c65"
+BUILDER_URL="https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/$BUILDER_REV/core/build-core-patches.py"
 curl --fail --location --retry 2 --connect-timeout 15 --max-time 60 \
-  "$RAW/core/build-core-patches.py" -o "$TMP_PY"
+  "$BUILDER_URL" -o "$TMP_PY"
 python3 - "$TMP_PY" <<'PY'
 from pathlib import Path
 import sys
-compile(Path(sys.argv[1]).read_text(encoding='utf-8'),sys.argv[1],'exec')
+source = Path(sys.argv[1]).read_text(encoding='utf-8')
+if 'Required source is not a regular file' not in source or 'Archive contains unsafe path/link' in source:
+    raise SystemExit('ERRO: gerador desatualizado ou incorreto; abortando antes da comparacao')
+compile(source, sys.argv[1], 'exec')
+print('OK: gerador de patches corrigido (symlink seguro; revisao fixada)')
 PY
 OUT="/root/observium-isp-exports/core-patch-review-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 python3 "$TMP_PY" --baseline "$BASELINE" --evidence "$EVIDENCE" --out "$OUT"
