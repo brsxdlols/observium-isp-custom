@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -44,4 +44,21 @@ if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --categories-check 
     --check|--categories-check) bash "$TMP/categories/install-category-ui.sh" --check ;;
     --apply|--categories-apply) bash "$TMP/categories/install-category-ui.sh" --apply ;;
   esac
+fi
+
+# Dashboard is seeded in a separate named dashboard and never overwrites an
+# existing dashboard (including the production dashboard ID 1).
+if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --dashboard-check || "$MODE" == --dashboard-apply ]]; then
+  fetch install-dashboard.sh dashboard/install-dashboard.sh
+  bash -n "$TMP/dashboard/install-dashboard.sh"
+  case "$MODE" in
+    --check|--dashboard-check) bash "$TMP/dashboard/install-dashboard.sh" --check ;;
+    --apply|--dashboard-apply) bash "$TMP/dashboard/install-dashboard.sh" --apply ;;
+  esac
+fi
+
+if [[ "$MODE" == --check || "$MODE" == --apply ]]; then
+  fetch audit-isp.sh audit.sh
+  bash -n "$TMP/audit.sh"
+  bash "$TMP/audit.sh"
 fi
