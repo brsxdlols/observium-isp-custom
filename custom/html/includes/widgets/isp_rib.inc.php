@@ -37,8 +37,24 @@ $jsonFile = '/opt/observium/isp-pppoe/dashboard.json';
 if (is_readable($jsonFile)) {
     $data = json_decode((string)file_get_contents($jsonFile), true);
 
+    // ISP_PPPOE_LEGACY_SOURCE_FILTER_V2:
+    // The legacy dashboard.json belongs to ONE configured concentrator.
+    // Reject it by default to avoid showing an unrelated NAS/BNG's count.
+    // The SQLite multi-concentrator consolidation below remains independent.
+    $sourceDeviceId = $config['isp_pppoe_legacy_device_id'] ?? null;
+    $sourceHostname = $config['isp_pppoe_legacy_hostname'] ?? null;
+    $legacySourceConfigured =
+        (is_int($sourceDeviceId) || (is_string($sourceDeviceId) && ctype_digit($sourceDeviceId))) &&
+        (int)$sourceDeviceId > 0 &&
+        is_string($sourceHostname) &&
+        trim($sourceHostname) !== '';
+
     if (
+        $legacySourceConfigured &&
         is_array($data) &&
+        isset($data['device_id'], $data['hostname']) &&
+        (string)$data['device_id'] === (string)$sourceDeviceId &&
+        (string)$data['hostname'] === trim($sourceHostname) &&
         isset($data['timestamp'], $data['online']) &&
         is_numeric($data['timestamp']) &&
         is_numeric($data['online']) &&
