@@ -2,11 +2,11 @@
 # Safe installation of the Observium ISP local-JSON ingestion framework.
 set -Eeuo pipefail
 umask 077
-[[ \${EUID:-$(id -u)} -eq 0 ]] || { echo 'ERRO: execute como root'; exit 1; }
-MODE="\${1:---check}"
+[[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'ERRO: execute como root'; exit 1; }
+MODE="${1:---check}"
 [[ "$MODE" == --check || "$MODE" == --apply ]] || { echo 'Uso: install-collectors.sh --check|--apply'; exit 2; }
-OBS="\${OBSERVIUM_DIR:-/opt/observium}"
-RAW="\${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
+OBS="${OBSERVIUM_DIR:-/opt/observium}"
+RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 [[ "$OBS" == /opt/observium && -f "$OBS/config.php" ]] || { echo 'ERRO: Observium esperado em /opt/observium'; exit 1; }
 for c in curl python3 flock; do command -v "$c" >/dev/null || { echo "ERRO: comando ausente: $c"; exit 1; }; done
 WORK=$(mktemp -d /tmp/obs-isp-collect.XXXXXX)
