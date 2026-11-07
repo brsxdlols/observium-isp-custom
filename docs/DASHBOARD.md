@@ -32,3 +32,17 @@ O modo `--check` apenas analisa esquema e widgets e não altera o banco. `--appl
 ## Publicação
 
 Use o branch principal e verifique o commit e versões antes de implantar. Para produção, rode primeiro `--check` / `--dashboard-check`.
+
+## Fonte PPPoE legada segura
+
+O `isp_rib.inc.php` público exige que a fonte opcional `/opt/observium/isp-pppoe/dashboard.json` corresponda ao concentrador explicitamente definido no `config.php`. Não configure esses valores no repositório. No servidor, somente se utilizar essa fonte legada:
+
+```php
+// Exemplo ilustrativo; use os dados reais somente no config.php local.
+$config['isp_pppoe_legacy_device_id'] = 123;
+$config['isp_pppoe_legacy_hostname'] = 'exemplo.interno';
+$config['isp_rib_router_label'] = 'Roteador BGP';
+```
+
+Sem as duas opções `isp_pppoe_legacy_*`, o arquivo legado é ignorado por segurança. O consolidado principal via `history-multi.sqlite` é independente e continua habilitado; o controle de atualização/parcialidade permanece igual. Em servidores com filtro legado embutido em código local, **não substitua diretamente** o widget antes de ajustar a configuração privada. A comparação local/remote deve ser revisada, e o instalador bloqueia substituição automática de arquivos diferentes.
+
