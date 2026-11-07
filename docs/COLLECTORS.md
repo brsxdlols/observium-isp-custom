@@ -44,3 +44,19 @@ O ingestor requer inteiros não negativos, IDs únicos, strings válidas e times
 Antes da ativação, salve backup dos coletores atuais, valide as fontes e execute `python3 /opt/observium/isp-collectors/collect.py --check`. O instalador protege o arquivo de ingestor com conteúdo diferente e cron não gerenciado. Não sobrescreve o núcleo Observium.
 
 **Pendente para completar a reprodução do ambiente de origem:** identificar e portar as rotinas efetivas de obtenção dos dados RIB e PPPoE (SNMP/API/CLI), regras de agendamento existentes, autenticação e série histórica legada. Não é seguro inventar comandos, OIDs ou credenciais para esses equipamentos.
+
+
+## Ambiente de origem auditado (7 de novembro de 2026)
+
+A instância operacional possui um sistema PHP legado de coleta **separado** do ingestor Python deste repositório. Os arquivos são:
+- `/opt/observium/isp-rib/collect.php` — snapshot RIB em `isp-rib/rib.json`;
+- `/opt/observium/isp-pppoe/collect.php` — PPPoE individual, `dashboard.json` / `history.sqlite`;
+- `/opt/observium/isp-pppoe/collect-multi.php` — múltiplos concentradores, `history-multi.sqlite`;
+- `/opt/observium/isp-pppoe/export.php` — exportador auxiliar (execução ainda não examinada).
+
+Os agendamentos existentes são três arquivos em `/etc/cron.d/`, com frequência de cinco minutos: `observium-isp-rib`, `observium-isp-pppoe` e `observium-isp-multi`. Em amostra de auditoria, a base SQLite continha 6.694 amostras e os arquivos de dados haviam sido atualizados há 3,6 minutos. **Presença de arquivos e atualização recente não garantem a saúde dos coletores.**
+
+O código PHP real **não está neste repositório**; apenas nomes, crons e formatos de saída foram identificados. Para portar o comportamento integral, os quatro scripts precisam ser revisados e parametrizados, retirando informações do ambiente de origem. Até lá, não execute `--collectors-apply` sobre o servidor atual, porque são sistemas distintos que podem disputar os mesmos arquivos.
+
+A auditoria `audit-isp.sh` reconhece agora tanto o caminho PHP legado quanto o ingestor novo e não exige a presença do ingestor alternativo quando os três coletores e seus cron legados estão presentes.
+
