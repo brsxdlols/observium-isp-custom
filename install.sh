@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -54,6 +54,17 @@ if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --dashboard-check |
   case "$MODE" in
     --check|--dashboard-check) bash "$TMP/dashboard/install-dashboard.sh" --check ;;
     --apply|--dashboard-apply) bash "$TMP/dashboard/install-dashboard.sh" --apply ;;
+  esac
+fi
+
+# The ingestion framework does not infer SNMP OIDs/credentials or fabricate samples.
+# On an existing collector, conflicting code is left untouched.
+if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --collectors-check || "$MODE" == --collectors-apply ]]; then
+  fetch install-collectors.sh collectors/install-collectors.sh
+  bash -n "$TMP/collectors/install-collectors.sh"
+  case "$MODE" in
+    --check|--collectors-check) bash "$TMP/collectors/install-collectors.sh" --check ;;
+    --apply|--collectors-apply) bash "$TMP/collectors/install-collectors.sh" --apply ;;
   esac
 fi
 
