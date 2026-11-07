@@ -26,10 +26,30 @@ done
 CONF=/etc/observium-isp/native-collectors.php
 CRONDIR=/etc/cron.d
 if [[ "$MODE" == --check ]]; then
-  if [[ -r "$CONF" ]]; then php -l "$CONF"; else echo 'PENDENTE: configuracao privada da coleta'; fi
+  legacy_crons=0
   for name in observium-isp-rib observium-isp-pppoe observium-isp-multi; do
-    if [[ -e "$CRONDIR/$name" ]]; then echo "EXISTENTE: $CRONDIR/$name (nao sera substituido)"; fi
+    if [[ -e "$CRONDIR/$name" ]]; then
+      echo "EXISTENTE: $CRONDIR/$name (nao sera substituido)"
+      legacy_crons=$((legacy_crons+1))
+    else
+      echo "AUSENTE: $CRONDIR/$name"
+    fi
   done
+  legacy_files=0
+  for rel in "${FILES[@]}"; do
+    [[ -f "$OBS/$rel" ]] && legacy_files=$((legacy_files+1))
+  done
+  if [[ -r "$CONF" ]]; then
+    php -l "$CONF"
+    echo 'CONFIGURADO: arquivo privado do novo coletor nativo presente.'
+  elif (( legacy_files == 4 && legacy_crons == 3 )); then
+    echo 'AMBIENTE LEGADO DETECTADO: quatro coletores e tres cron encontrados.'
+    echo 'INFO: configuracao privada nova NAO e obrigatoria para os coletores legados.'
+    echo 'INFO: validar logs, fontes SNMP e atualizacao dos snapshots separadamente.'
+  else
+    echo 'PENDENTE: configuracao privada para o novo padrao de coletores.'
+    echo 'AVISO: arquivos/cron parciais; nao ativar coleta nova sem revisao.'
+  fi
   echo 'CHECK OK: nenhuma alteracao efetuada.'
   exit 0
 fi
