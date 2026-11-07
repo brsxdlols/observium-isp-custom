@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -83,4 +83,11 @@ if [[ "$MODE" == --check || "$MODE" == --apply ]]; then
   fetch audit-isp.sh audit.sh
   bash -n "$TMP/audit.sh"
   bash "$TMP/audit.sh"
+fi
+# Read-only core integration validation. Failed readiness is reported with
+# exit 4; the modules/database may be installed but are NOT fully operational.
+if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --core-check ]]; then
+  fetch verify-core-integration.sh core/verify-core-integration.sh
+  bash -n "$TMP/core/verify-core-integration.sh"
+  bash "$TMP/core/verify-core-integration.sh"
 fi
