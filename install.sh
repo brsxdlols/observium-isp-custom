@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -90,6 +90,13 @@ if [[ "$MODE" == --core-export ]]; then
   fetch export-core-evidence.sh core/export-core-evidence.sh
   bash -n "$TMP/core/export-core-evidence.sh"
   bash "$TMP/core/export-core-evidence.sh"
+fi
+
+# Build private review-only diff patches from the matching pristine Community archive.
+if [[ "$MODE" == --core-build ]]; then
+  fetch prepare-core-patches.sh core/prepare-core-patches.sh
+  bash -n "$TMP/core/prepare-core-patches.sh"
+  bash "$TMP/core/prepare-core-patches.sh"
 fi
 
 # Read-only core integration validation. Failed readiness is reported with
