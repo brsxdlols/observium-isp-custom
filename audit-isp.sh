@@ -26,25 +26,53 @@ if command -v php >/dev/null 2>&1 && [[ -r "$OBS/config.php" ]]; then
   php -l "$OBS/config.php" >/dev/null && echo 'OK: config.php sintaxe valida' || { echo 'PENDENTE: config.php sintaxe'; count_missing=$((count_missing+1)); }
 fi
 echo '===== AUDITORIA DE COLETA RIB/PPPoE ====='
+legacy_count=0
+for entry in \
+  'isp-rib/collect.php:RIB IPv4' \
+  'isp-pppoe/collect.php:PPPoE individual' \
+  'isp-pppoe/collect-multi.php:PPPoE multi'; do
+  file=${entry%%:*}
+  label=${entry#*:}
+  if [[ -f "$OBS/$file" ]]; then
+    echo "OK: coletor legado $label"
+    legacy_count=$((legacy_count + 1))
+  else
+    echo "AUSENTE: coletor legado $label (pode ser ambiente novo)"
+  fi
+done
+legacy_cron_count=0
+for cron in observium-isp-rib observium-isp-pppoe observium-isp-multi; do
+  if [[ -f "/etc/cron.d/$cron" ]]; then
+    echo "OK: agendamento legado $cron"
+    legacy_cron_count=$((legacy_cron_count+1))
+  else
+    echo "AUSENTE: agendamento legado $cron"
+  fi
+done
 if [[ -f "$OBS/isp-collectors/collect.py" ]]; then
-  echo 'OK: ingestor ISP presente'
+  echo 'OK: ingestor JSON alternativo instalado'
+  if [[ -r /etc/observium-isp/sources.json ]]; then
+    echo 'OK: fontes do ingestor JSON configuradas (validar dados separadamente)'
+  else
+    echo 'INFO: ingestor JSON sem fontes; não gera dados'
+  fi
+elif (( legacy_count == 3 && legacy_cron_count == 3 )); then
+  echo 'OK: coleta legada presente; ingestor JSON alternativo não necessário'
 else
-  echo 'PENDENTE: ingestor ISP nao instalado (pode existir coletor legado independente)'
+  echo 'PENDENTE: configurar coletores reais (legados ou ingestor JSON com fontes)'
   count_missing=$((count_missing+1))
 fi
-if [[ -r /etc/observium-isp/sources.json ]]; then
-  echo 'OK: fontes JSON configuradas (validar conteudo no --collectors-check)'
-else
-  echo 'PENDENTE: fontes de coleta real nao configuradas para ingestor novo'
-  count_missing=$((count_missing+1))
+if command -v stat >/dev/null 2>&1; then
+  for snapshot in isp-rib/rib.json isp-pppoe/dashboard.json isp-pppoe/history-multi.sqlite; do
+    if [[ -f "$OBS/$snapshot" ]]; then
+      modified=$(stat -c %Y "$OBS/$snapshot" 2>/dev/null || echo 0)
+      now=$(date +%s)
+      age=$((now-modified))
+      echo "DADO: $snapshot; idade=$age segundos (mtime, nao validacao SNMP)"
+    fi
+  done
 fi
-if [[ -f /etc/cron.d/observium-isp-collectors ]]; then
-  echo 'OK: cron do ingestor ISP presente (execucao depende das fontes)'
-else
-  echo 'PENDENTE: cron do ingestor ISP nao instalado (verificar cron legado)'
-  count_missing=$((count_missing+1))
-fi
-echo 'AVISO: snapshots/SQLite existentes nao comprovam atualizacao periodica nem validade SNMP/API.'
+echo 'AVISO: arquivos, cron e mtime não comprovam sucesso do polling; verificar logs e dados reais.'
 echo "Auditoria concluida. Pendencias detectadas: $count_missing"
 echo 'ATENCAO: auditoria verifica presenca/marcadores, nao testa SNMP, coleta efetiva ou funcionamento no navegador.'
 exit 0
