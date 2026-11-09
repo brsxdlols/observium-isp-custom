@@ -100,7 +100,7 @@ if [[ "$MODE" == --core-build ]]; then
 fi
 
 # Private patch validation only: never modifies the Observium core.
-if [[ "$MODE" == --core-patch-check|--core-rehearse ]]; then
+if [[ "$MODE" == --core-patch-check ]]; then
   fetch check-core-patches.sh core/check-core-patches.sh
   bash -n "$TMP/core/check-core-patches.sh"
   bash "$TMP/core/check-core-patches.sh"
