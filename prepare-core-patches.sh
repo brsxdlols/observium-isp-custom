@@ -26,6 +26,34 @@ if [[ ! -r "$BASELINE" ]]; then
 fi
 # Safe read-only checks; never extract the archive into /opt/observium.
 tar -tzf "$BASELINE" >/dev/null
+# Verify the baseline release before generating any diffs. Matching the version
+# is necessary, but SHA-256 of pristine preimages is still required to apply.
+python3 - "$BASELINE" "$OBS/includes/definitions/version.inc.php" <<'PY'
+import re, sys, tarfile
+from pathlib import Path
+archive, installed = sys.argv[1:]
+pattern = rb"define\\s*\\(\\s*['\\\"]OBSERVIUM_VERSION['\\\"]\\s*,\\s*['\\\"]([^'\\\"]+)['\\\"]"
+def version(data):
+    m = re.search(pattern, data)
+    if not m:
+        raise SystemExit('ERRO: OBSERVIUM_VERSION nao encontrado')
+    return m.group(1).decode('ascii')
+local = version(Path(installed).read_bytes())
+name = 'observium/includes/definitions/version.inc.php'
+with tarfile.open(archive, 'r:gz') as tar:
+    matches = [item for item in tar if item.name == name]
+    if len(matches) != 1 or not matches[0].isfile() or matches[0].size > 65536:
+        raise SystemExit('ERRO: arquivo de versao oficial ausente, duplicado ou inseguro')
+    handle = tar.extractfile(matches[0])
+    if handle is None:
+        raise SystemExit('ERRO: nao foi possivel ler a versao do pacote oficial')
+    remote = version(handle.read(65537))
+print('VERSAO INSTALADA:', local)
+print('VERSAO PACOTE OFICIAL:', remote)
+if local != remote:
+    raise SystemExit('ERRO: versoes diferentes; patches nao serao gerados. Selecione um pacote original compativel com ISP_CORE_BASELINE.')
+print('OK: versoes iguais; igualdade de revisao/arquivos ainda depende dos hashes SHA256.')
+PY
 TMP_PY="$WORK/build-core-patches.py"
 # Pinned core builder: the immutable commit URL avoids stale CDN responses
 # from /main/ and prevents accidentally running a mismatched generator.
