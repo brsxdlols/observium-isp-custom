@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -112,6 +112,14 @@ if [[ "$MODE" == --core-rehearse ]]; then
   fetch rehearse-core-patches.sh core/rehearse-core-patches.sh
   bash -n "$TMP/core/rehearse-core-patches.sh"
   bash "$TMP/core/rehearse-core-patches.sh"
+fi
+
+# Simulate an atomic transaction, and injected failure/rollback, on disposable copies.
+# Production Observium files are never written in this mode.
+if [[ "$MODE" == --core-tx-test ]]; then
+  fetch test-core-transaction.sh core/test-core-transaction.sh
+  bash -n "$TMP/core/test-core-transaction.sh"
+  bash "$TMP/core/test-core-transaction.sh"
 fi
 
 # Read-only core integration validation. Failed readiness is reported with
