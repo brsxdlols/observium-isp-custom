@@ -10,7 +10,13 @@ VALIDATOR_REV="f36c01149dcbbe1eb40e7b28e9efb909a05e91c5"
 RAW="https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/$VALIDATOR_REV"
 [[ -f "$OBS/config.php" ]] || { echo 'ERRO: Observium nao encontrado.' >&2; exit 1; }
 [[ -r "$BUNDLE" ]] || { echo "ERRO: ZIP privado nao encontrado: $BUNDLE" >&2; exit 2; }
-for cmd in python3 curl patch; do command -v "$cmd" >/dev/null || { echo "ERRO: falta $cmd" >&2; exit 1; }; done
+for cmd in python3 curl; do command -v "$cmd" >/dev/null || { echo "ERRO: falta $cmd" >&2; exit 1; }; done
+if ! command -v patch >/dev/null 2>&1; then
+  echo 'ERRO: dependencia ausente: patch (utilitario para simular diffs).' >&2
+  echo 'No Debian 12, execute: apt-get update && apt-get install -y patch' >&2
+  echo 'O modo --core-patch-check e somente leitura e nao instala pacotes automaticamente.' >&2
+  exit 2
+fi
 WORK=$(mktemp -d /tmp/obs-isp-core-verify.XXXXXX)
 trap 'rm -rf -- "$WORK"' EXIT
 curl --fail --silent --show-error --location --retry 2 \
