@@ -48,3 +48,16 @@ Um gerador Python confere os SHA-256 dos cinco arquivos personalizados contra `m
 **Restrição:** o pacote oficial `latest` pode ser outra revisão em relação à instalação de origem. A comparação não comprova igualdade de versões; a versão-base precisa ser verificada antes de transformar esses rascunhos em patches instaláveis. Os diffs podem conter identificadores, endereços internos e trechos do código Observium; não publique o diretório de revisão no GitHub. O repositório contém somente o **gerador**, e não os patches confidenciais.
 
 A publicação de patches finais depende de verificar a pré-imagem por SHA-256 e revisar manualmente cada diff. Aplicação automática e rollback de patches do núcleo **ainda não estão habilitados**.
+
+
+## Validação privada do ZIP de patches — modo `--core-patch-check`
+
+A partir desta atualização, o instalador aceita um ZIP privado contendo exatamente `manifest.json`, `html__includes__navbar.inc.php.patch`, `html__ajax__widget.php.patch` e `html__js__dashboard.js.patch`. O comando:
+
+```bash
+bash install.sh --core-patch-check
+```
+
+usa `/root/observium-isp-patches-revisao.zip` por padrão. Configure `ISP_CORE_PATCH_ZIP=/caminho/arquivo.zip` para outro caminho. Ele verifica nomes e estrutura de entradas, hashes SHA-256 do manifesto e cabeçalhos dos diffs. Para um arquivo ainda original, simula o `patch` em cópia temporária e confere o hash final; para um arquivo que já está personalizado, apenas informa que o SHA atual corresponde ao destino e **não** executa a simulação, por ausência da versão original naquele diretório.
+
+O validador **não modifica o Observium**. Não faz upload, não publica os diffs, não considera os patches homologados e não executa rollback (pois não há aplicação). Para homologação efetiva, revisar código e dados privados, testar em instalação limpa da mesma revisão e verificar os efeitos dos AJAX no navegador. Aplicação real com backup/rollback ainda não está habilitada.
