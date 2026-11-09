@@ -5,7 +5,9 @@ umask 077
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'ERRO: execute como root.' >&2; exit 1; }
 OBS="${OBSERVIUM_DIR:-/opt/observium}"
 BUNDLE="${ISP_CORE_PATCH_ZIP:-/root/observium-isp-patches-revisao.zip}"
-RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
+# Pinned revision avoids main-branch CDN cache mismatches.
+VALIDATOR_REV="f36c01149dcbbe1eb40e7b28e9efb909a05e91c5"
+RAW="https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/$VALIDATOR_REV"
 [[ -f "$OBS/config.php" ]] || { echo 'ERRO: Observium nao encontrado.' >&2; exit 1; }
 [[ -r "$BUNDLE" ]] || { echo "ERRO: ZIP privado nao encontrado: $BUNDLE" >&2; exit 2; }
 for cmd in python3 curl patch; do command -v "$cmd" >/dev/null || { echo "ERRO: falta $cmd" >&2; exit 1; }; done
