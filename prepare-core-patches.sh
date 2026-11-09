@@ -32,7 +32,7 @@ python3 - "$BASELINE" "$OBS/includes/definitions/version.inc.php" <<'PY'
 import re, sys, tarfile
 from pathlib import Path
 archive, installed = sys.argv[1:]
-pattern = rb"define\\s*\\(\\s*['\\\"]OBSERVIUM_VERSION['\\\"]\\s*,\\s*['\\\"]([^'\\\"]+)['\\\"]"
+pattern = rb"define\s*\(\s*['\"]OBSERVIUM_VERSION['\"]\s*,\s*['\"]([^'\"]+)['\"]"
 def version(data):
     m = re.search(pattern, data)
     if not m:
