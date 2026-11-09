@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -100,10 +100,18 @@ if [[ "$MODE" == --core-build ]]; then
 fi
 
 # Private patch validation only: never modifies the Observium core.
-if [[ "$MODE" == --core-patch-check ]]; then
+if [[ "$MODE" == --core-patch-check|--core-rehearse ]]; then
   fetch check-core-patches.sh core/check-core-patches.sh
   bash -n "$TMP/core/check-core-patches.sh"
   bash "$TMP/core/check-core-patches.sh"
+fi
+
+# Rehearse core patches on pristine temporary copies and verify simulated rollback.
+# NEVER apply patches to the live Observium directory.
+if [[ "$MODE" == --core-rehearse ]]; then
+  fetch rehearse-core-patches.sh core/rehearse-core-patches.sh
+  bash -n "$TMP/core/rehearse-core-patches.sh"
+  bash "$TMP/core/rehearse-core-patches.sh"
 fi
 
 # Read-only core integration validation. Failed readiness is reported with
