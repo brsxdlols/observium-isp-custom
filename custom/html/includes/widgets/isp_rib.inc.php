@@ -221,7 +221,7 @@ $pppoeStatus = $status($pppoeTime);
 
 echo '<div class="box box-solid isp-rib-pppoe-box" style="margin:0;overflow:visible;height:auto;min-height:0;border:1px solid #dce3e8;border-radius:6px;padding-bottom:8px;box-sizing:border-box">';
 echo '<div class="box-header" style="padding-bottom:4px">';
-echo '<h3 class="box-title">RIB IPv4 / PPPoE — Geral</h3>';
+echo '<h3 class="box-title">FIB / RIB IPv4 e IPv6 / PPPoE — Geral</h3>';
 echo '</div>';
 
 echo '<div class="box-content" style="padding:10px 12px">';
@@ -229,10 +229,10 @@ echo '<div class="box-content" style="padding:10px 12px">';
 echo '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">';
 
 foreach ([
-    ['Rotas IPv4 — RIB', $rib, $ribStatus, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
-    ['Rotas IPv6 — RIB', $rib6, $rib6Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
     ['Rotas IPv4 — FIB', $fib4, $fib4Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
     ['Rotas IPv6 — FIB', $fib6, $fib6Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
+    ['Rotas IPv4 — RIB', $rib, $ribStatus, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
+    ['Rotas IPv6 — RIB', $rib6, $rib6Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
     ['PPPoE totais', $pppoeTotal, ($pppoeTotalPartial ? ['PARCIAL', '#b9770e'] : $status($pppoeTotalTime)), $pppoeTotalDevice]
 ] as $item) {
 
