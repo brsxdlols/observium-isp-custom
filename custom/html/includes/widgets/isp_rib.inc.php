@@ -10,6 +10,9 @@ $tz = new DateTimeZone('America/Sao_Paulo');
 
 $rib = null;
 $ribTime = null;
+$rib6 = null;
+$fib4 = null;
+$fib6 = null;
 
 $ribFile = '/opt/observium/isp-rib/rib.json';
 
@@ -25,6 +28,19 @@ if (is_readable($ribFile)) {
     ) {
         $rib = (int)$data['ipv4_entries'];
         $ribTime = (int)$data['timestamp'];
+        // ISP_RIB_IPV6_FIB_CARDS_V1
+        // Optional counters must be collected separately; never infer FIB from RIB.
+        foreach ([
+            'ipv6_entries' => 'rib6',
+            'fib_ipv4_entries' => 'fib4',
+            'fib_ipv6_entries' => 'fib6'
+        ] as $key => $metric) {
+            if (isset($data[$key]) &&
+                is_numeric($data[$key]) &&
+                (float)$data[$key] >= 0) {
+                $metric = (int)$data[$key];
+            }
+        }
     }
 }
 
@@ -198,6 +214,9 @@ $status = static function ($timestamp) {
 };
 
 $ribStatus = $status($ribTime);
+$rib6Status = $status($rib6 === null ? null : $ribTime);
+$fib4Status = $status($fib4 === null ? null : $ribTime);
+$fib6Status = $status($fib6 === null ? null : $ribTime);
 $pppoeStatus = $status($pppoeTime);
 
 echo '<div class="box box-solid isp-rib-pppoe-box" style="margin:0;overflow:visible;height:auto;min-height:0;border:1px solid #dce3e8;border-radius:6px;padding-bottom:8px;box-sizing:border-box">';
@@ -211,6 +230,9 @@ echo '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap
 
 foreach ([
     ['Rotas IPv4 — RIB', $rib, $ribStatus, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
+    ['Rotas IPv6 — RIB', $rib6, $rib6Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
+    ['Rotas IPv4 — FIB', $fib4, $fib4Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
+    ['Rotas IPv6 — FIB', $fib6, $fib6Status, ($config['isp_rib_router_label'] ?? 'Roteador BGP')],
     ['PPPoE totais', $pppoeTotal, ($pppoeTotalPartial ? ['PARCIAL', '#b9770e'] : $status($pppoeTotalTime)), $pppoeTotalDevice]
 ] as $item) {
 
