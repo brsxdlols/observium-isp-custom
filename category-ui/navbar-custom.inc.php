@@ -5,7 +5,7 @@ if (!isset($navbar['ports']['entries']) || !is_array($navbar['ports']['entries']
 }
 
 $entries = &$navbar['ports']['entries'];
-$names = ['NAS', 'MGMT', 'LAG', 'TRANSIT', 'PEERING', 'CGNAT', 'CORE', 'PPPOE', 'PTP', 'TRUNK'];
+$names = ['NAS', 'MGMT', 'LAG', 'TRANSIT', 'PEERING', 'CGNAT', 'CORE', 'PPPOE', 'PTP', 'TRUNK', 'DNS', 'HYPERVISOR'];
 $defaults = ['NAS' => 'iftype', 'MGMT' => 'ports', 'LAG' => 'ports'];
 $found = [];
 
@@ -27,7 +27,7 @@ foreach ($entries as $key => &$entry) {
         continue;
     }
     $found[$name] = true;
-    if ($name === 'MGMT' || $name === 'LAG') {
+    if (in_array($name, ['MGMT', 'LAG', 'DNS', 'HYPERVISOR'], true)) {
         $entry['url'] = generate_url(['page' => 'ports', 'ifAlias' => $name . ':']);
     } elseif ($name === 'NAS') {
         $entry['url'] = generate_url(['page' => 'iftype', 'type' => $name]);
@@ -36,7 +36,7 @@ foreach ($entries as $key => &$entry) {
 }
 unset($entry);
 
-foreach (['NAS', 'LAG', 'MGMT'] as $name) {
+foreach (['NAS', 'LAG', 'MGMT', 'DNS', 'HYPERVISOR'] as $name) {
     if (isset($found[$name])) {
         continue;
     }
