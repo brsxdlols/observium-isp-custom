@@ -44,7 +44,7 @@ from pathlib import Path
 import re,sys
 conf,nav=map(Path,sys.argv[1:3]); enable=sys.argv[3]=='1'
 s=conf.read_text()
-for group in ('CGNAT','PPPOE','TRUNK','PTP','MGMT','NAS'):
+for group in ('CGNAT','PPPOE','TRUNK','PTP','MGMT','NAS','DNS','HYPERVISOR'):
     if not re.search(r"\$config\s*\[\s*['\"]int_groups['\"]\s*\]\s*\[\s*\]\s*=\s*['\"]" + group + r"['\"]",s,re.I):
         s+="\n$config['int_groups'][] = '%s';\n"%group
 # Description parser in Observium will label NAS ifAlias as NAS after discovery.
@@ -84,4 +84,4 @@ cat "$TMP/config.php" > "$CONF"
 cat "$TMP/navbar.inc.php" > "$NAV"
 php -l "$CONF" >/dev/null && php -l "$NAV" >/dev/null && php -l "$CUSTOM" >/dev/null
 printf 'Aplicação concluída. Backup: %s\n' "$BACKUP"
-printf 'Após discovery, prefixes NAS: ficam disponíveis em gráficos agrupados.\n'
+printf 'Após discovery, prefixos NAS/DNS/HYPERVISOR: ficam disponíveis em gráficos agrupados.\n'
