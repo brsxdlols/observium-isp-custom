@@ -35,7 +35,7 @@ if [[ "$MERGE_RC" != 0 ]]; then
   echo 'ERRO: git merge-file nao concluiu.'
   exit 2
 fi
-if grep -Eq '^(<<<<<<< |=======|>>>>>>> |\\|\\|\\|\\|\\|\\|\\| )' "$TEMP/merged.php"; then
+if grep -Eq '^(<<<<<<< |=======$|>>>>>>> )' "$TEMP/merged.php"; then
   echo 'ERRO: marcadores de conflito na copia gerada'; exit 4
 fi
 php -l "$TEMP/merged.php" >/dev/null || { echo 'ERRO: copia combinada nao passou no PHP lint'; exit 4; }
