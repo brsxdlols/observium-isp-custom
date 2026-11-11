@@ -47,6 +47,35 @@ if ($value < 0) {
     exit(1);
 }
 
+// ISP_RIB_IPV6_FIB_V1 - optional counters, NO guessed device-specific OIDs.
+// Each field is only published when its explicitly configured SNMP OID works.
+// The legacy ipv4_entries value is preserved for backward compatibility.
+$ispOptionalCounters = [
+    'rib_ipv6_oid' => 'ipv6_entries',
+    'fib_ipv4_oid' => 'fib_ipv4_entries',
+    'fib_ipv6_oid' => 'fib_ipv6_entries',
+];
+$ispCollected = [];
+foreach ($ispOptionalCounters as $configKey => $jsonKey) {
+    $extraOid = trim((string)($ispNative[$configKey] ?? ''));
+    if ($extraOid === '') {
+        continue;
+    }
+    if (!preg_match('/^\\.?[0-9]+(?:\\.[0-9]+)+$/', $extraOid)) {
+        fwrite(STDERR, "OID opcional invalido ($configKey); ignorado\\n");
+        continue;
+    }
+    $extra = snmp_get($device, $extraOid, '-OQv');
+    if (!empty($GLOBALS['snmp_status']) &&
+        is_numeric(trim((string)$extra)) &&
+        (float)trim((string)$extra) >= 0) {
+        $ispCollected[$jsonKey] = (int)trim((string)$extra);
+        $ispCollected[$jsonKey . '_oid'] = $extraOid;
+    } else {
+        fwrite(STDERR, "Coleta opcional indisponivel ($configKey)\\n");
+    }
+}
+
 $data = [
     'device_id' => (int)$ispNative['rib_device_id'],
     'hostname' => $device['hostname'],
@@ -54,7 +83,7 @@ $data = [
     'oid' => $oid,
     'collected_at' => date('c'),
     'timestamp' => time()
-];
+] + $ispCollected;
 
 $file = '/opt/observium/isp-rib/rib.json';
 $tmp = tempnam(dirname($file), '.rib-');
