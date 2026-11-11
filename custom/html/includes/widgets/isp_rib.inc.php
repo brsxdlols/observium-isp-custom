@@ -38,7 +38,13 @@ if (is_readable($ribFile)) {
             if (isset($data[$key]) &&
                 is_numeric($data[$key]) &&
                 (float)$data[$key] >= 0) {
-                $metric = (int)$data[$key];
+                if ($metric === 'rib6') {
+                    $rib6 = (int)$data[$key];
+                } elseif ($metric === 'fib4') {
+                    $fib4 = (int)$data[$key];
+                } elseif ($metric === 'fib6') {
+                    $fib6 = (int)$data[$key];
+                }
             }
         }
     }
