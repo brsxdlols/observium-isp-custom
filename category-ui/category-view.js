@@ -8,7 +8,7 @@
   var categories = [
     'NAS', 'MGMT', 'LAG', 'TRANSIT',
     'PEERING', 'CGNAT', 'CORE',
-    'PPPOE', 'PTP', 'TRUNK'
+    'PPPOE', 'PTP', 'TRUNK', 'DNS', 'HYPERVISOR'
   ];
 
   var defaults = {
@@ -21,7 +21,9 @@
     CORE: 'graphs',
     PPPOE: 'graphs',
     PTP: 'graphs',
-    TRUNK: 'graphs'
+    TRUNK: 'graphs',
+    DNS: 'ports',
+    HYPERVISOR: 'ports'
   };
 
   // Mesma chave da V1: preferencias preservadas.
