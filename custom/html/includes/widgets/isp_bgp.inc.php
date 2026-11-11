@@ -35,6 +35,7 @@ $rows = dbFetchRows("
 // Prefixos aceitos por sessao BGP e familia IPv4 unicast.
 // Dados provenientes do poller existente do Observium.
 $prefixesIPv4 = [];
+$prefixesIPv6 = []; // independent IPv6 unicast accepted-prefix counts (per session)
 
 try {
     $tables = dbFetchRows("SHOW TABLES LIKE 'bgpPeers_cbgp'");
@@ -57,7 +58,7 @@ try {
                 SELECT device_id, bgpPeer_id,
                        afi, safi, AcceptedPrefixes
                 FROM bgpPeers_cbgp
-                WHERE afi = 'ipv4' AND safi = 'unicast'
+                WHERE afi IN ('ipv4', 'ipv6') AND safi = 'unicast'
             ");
 
             foreach ((array)$prefixRows as $r) {
@@ -72,13 +73,18 @@ try {
                 $key = (string)$r['device_id'] . '|' .
                        (string)$r['bgpPeer_id'];
 
-                $prefixesIPv4[$key] =
-                    (int)$r['AcceptedPrefixes'];
+                $afi = strtolower((string)$r['afi']);
+                if ($afi === 'ipv4') {
+                    $prefixesIPv4[$key] = (int)$r['AcceptedPrefixes'];
+                } elseif ($afi === 'ipv6') {
+                    $prefixesIPv6[$key] = (int)$r['AcceptedPrefixes'];
+                }
             }
         }
     }
 } catch (Throwable $ex) {
     $prefixesIPv4 = [];
+    $prefixesIPv6 = [];
 }
 
 $items = [];
@@ -111,6 +117,9 @@ foreach ($rows as $p) {
 
     $p['_accepted_ipv4'] =
         $prefixesIPv4[$prefixKey] ?? null;
+
+    $p['_accepted_ipv6'] =
+        $prefixesIPv6[$prefixKey] ?? null;
 
     $p['_age'] = $age;
     $p['_stale'] = $stale;
@@ -235,6 +244,17 @@ if (!$items) {
         echo '<strong style="color:#183d59">' .
              ($accepted !== null
                 ? number_format((int)$accepted, 0, ',', '.')
+                : 'Indisponível') .
+             '</strong>';
+        echo '</div>';
+
+        // ISP_BGP_IPV6_ACCEPTED_V1 - count received/accepted prefixes per peer, NOT unique RIB.
+        echo '<div style="display:flex;justify-content:space-between;gap:8px;margin-top:5px">';
+        echo '<span>Prefixos IPv6 recebidos (aceitos)</span>';
+        $accepted6 = $p['_accepted_ipv6'];
+        echo '<strong style="color:#183d59">' .
+             ($accepted6 !== null
+                ? number_format((int)$accepted6, 0, ',', '.')
                 : 'Indisponível') .
              '</strong>';
         echo '</div>';
