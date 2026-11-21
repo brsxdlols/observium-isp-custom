@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -135,4 +135,16 @@ if [[ "$MODE" == --check || "$MODE" == --apply || "$MODE" == --core-check ]]; th
   fetch verify-core-integration.sh core/verify-core-integration.sh
   bash -n "$TMP/core/verify-core-integration.sh"
   bash "$TMP/core/verify-core-integration.sh"
+fi
+
+# Guarded, opt-in migration of the existing FLYNET PPPoE history page.
+# Kept separate from --apply: not every provider has this native page.
+if [[ "$MODE" == --pppoe-chart-check || "$MODE" == --pppoe-chart-apply ]]; then
+  command -v python3 >/dev/null || { echo 'python3 nao instalado'; exit 1; }
+  fetch tools/upgrade-pppoe-chart.py pppoe/upgrade-pppoe-chart.py
+  python3 -m py_compile "$TMP/pppoe/upgrade-pppoe-chart.py"
+  case "$MODE" in
+    --pppoe-chart-check) python3 "$TMP/pppoe/upgrade-pppoe-chart.py" --check ;;
+    --pppoe-chart-apply) python3 "$TMP/pppoe/upgrade-pppoe-chart.py" --apply ;;
+  esac
 fi
