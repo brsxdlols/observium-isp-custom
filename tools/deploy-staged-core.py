@@ -83,7 +83,7 @@ def copy_into(src, dest):
 
 @contextmanager
 def exclusive_lock(root):
-    lock = root.parent / ".observium-isp-core-deploy.lock"
+    lock = Path("/root/observium-isp-core-deploy.lock")
     with lock.open("a+") as f:
         fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
         yield
@@ -168,12 +168,14 @@ def main():
     p.add_argument("--confirm-production", action="store_true")
     args = p.parse_args()
 
-    # Validate before touching any production file.
+    # No lockfile is created in check mode; check remains read-only.
+    if args.check:
+        validate(args.root, args.stage)
+        print("CHECK ONLY: no Observium files changed")
+        return
     with exclusive_lock(args.root):
         validate(args.root, args.stage)
-        if args.check:
-            print("CHECK ONLY: no Observium files changed")
-        elif args.rehearse:
+        if args.rehearse:
             transaction(args.root, args.stage, args.backup_dir, simulate=True)
             print("REHEARSAL ONLY: no Observium files changed")
         else:
