@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -145,7 +145,7 @@ if [[ "$MODE" == --pppoe-chart-check || "$MODE" == --pppoe-chart-apply ]]; then
   python3 -m py_compile "$TMP/pppoe/upgrade-pppoe-chart.py"
   case "$MODE" in
     --pppoe-chart-check) python3 "$TMP/pppoe/upgrade-pppoe-chart.py" --check ;;
-    --pppoe-chart-apply|--full-check) python3 "$TMP/pppoe/upgrade-pppoe-chart.py" --apply ;;
+    --pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse) python3 "$TMP/pppoe/upgrade-pppoe-chart.py" --apply ;;
   esac
 fi
 
@@ -156,4 +156,18 @@ if [[ "$MODE" == --full-check ]]; then
   fetch tools/full-preflight.py full/full-preflight.py
   python3 -m py_compile "$TMP/full/full-preflight.py"
   python3 "$TMP/full/full-preflight.py"
+fi
+
+# Private staged-core preflight and injected-failure rehearsal. These modes
+# never deploy to production; production apply is deliberately not exposed yet.
+if [[ "$MODE" == --core-stage-check || "$MODE" == --core-stage-rehearse ]]; then
+  command -v python3 >/dev/null || { echo 'python3 nao instalado'; exit 1; }
+  fetch tools/deploy-staged-core.py core/deploy-staged-core.py
+  python3 -m py_compile "$TMP/core/deploy-staged-core.py"
+  STAGE="${ISP_CORE_STAGE:-/root/observium-isp-stage-missing}"
+  if [[ "$MODE" == --core-stage-check ]]; then
+    python3 "$TMP/core/deploy-staged-core.py" --check --stage "$STAGE"
+  else
+    python3 "$TMP/core/deploy-staged-core.py" --rehearse --stage "$STAGE"
+  fi
 fi
