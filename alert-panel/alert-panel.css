@@ -1,0 +1,24 @@
+/* ISP_ALERT_PANEL_V1 */
+.isp-alert-expand-v1{float:right;margin:0 8px 0 10px;border:1px solid #bcd0db;border-radius:4px;background:#f7fbfe;color:#155b84;padding:5px 10px;font-size:12px;cursor:pointer}
+.isp-alert-open{overflow:hidden}
+.isp-alert-backdrop{position:fixed;inset:0;z-index:2147483000;background:rgba(17,31,48,.65);display:flex;align-items:center;justify-content:center;padding:18px}
+.isp-alert-modal{width:min(1600px,100%);height:min(94vh,100%);background:#fff;color:#243b53;border-radius:9px;box-shadow:0 15px 55px #152c4777;display:flex;flex-direction:column;overflow:hidden}
+.isp-alert-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 18px;border-bottom:1px solid #dde6ed}
+.isp-alert-heading h2{font-size:20px;margin:0;color:#155b84}
+.isp-alert-close{border:1px solid #d0dbe4;background:#fff;padding:7px 11px;border-radius:5px}
+.isp-alert-count{margin:8px 18px;color:#66788a;font-size:12px}
+.isp-alert-layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(240px,1fr);gap:14px;flex:1;min-height:0;padding:0 16px 16px}
+.isp-alert-list{display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid #dde6ed;border-radius:6px}
+.isp-alert-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px}
+.isp-alert-toolbar select{padding:5px;max-width:50%}
+.isp-alert-scroller{overflow:auto;flex:1;min-height:0}
+.isp-alert-scroller table{border-collapse:collapse;width:100%;font-size:12px}
+.isp-alert-scroller th,.isp-alert-scroller td{text-align:left;border-bottom:1px solid #e6ecf0;padding:9px;vertical-align:top}
+.isp-alert-scroller th{position:sticky;top:0;background:#eff5f8}
+.isp-alert-empty{padding:12px;color:#718096}
+.isp-alert-summary{overflow:auto;display:grid;align-content:start;gap:10px}
+.isp-alert-stat{border:1px solid #dde6ed;border-left:4px solid #2479a1;border-radius:5px;padding:11px;background:#f9fcfe;display:flex;flex-direction:column;gap:3px}
+.isp-alert-stat strong{font-size:25px;color:#194763}
+.isp-alert-stat small{color:#697b89}
+.isp-alert-notice{margin:0;padding:8px 16px;border-top:1px solid #e6ecf0;font-size:11px;color:#687989}
+@media(max-width:780px){.isp-alert-layout{grid-template-columns:1fr;overflow:auto}.isp-alert-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.isp-alert-modal{height:96vh}}
