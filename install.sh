@@ -6,8 +6,8 @@ umask 077
 RAW="${ISP_REPO_RAW:-https://raw.githubusercontent.com/brsxdlols/observium-isp-custom/main}"
 MODE="${1:---check}"
 case "$MODE" in
-  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse) ;;
-  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse]'; exit 2 ;;
+  --new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse|--alert-panel-check|--alert-panel-apply) ;;
+  *) echo 'Uso: bash install.sh [--new|--check|--apply|--categories-check|--categories-apply|--dashboard-check|--dashboard-apply|--collectors-check|--collectors-apply|--native-check|--native-apply|--core-check|--core-export|--core-build|--core-patch-check|--core-rehearse|--core-tx-test|--core-smoke|--pppoe-chart-check|--pppoe-chart-apply|--full-check|--core-stage-check|--core-stage-rehearse|--alert-panel-check|--alert-panel-apply]'; exit 2 ;;
 esac
 command -v curl >/dev/null || { echo 'curl nao instalado'; exit 1; }
 TMP=$(mktemp -d /tmp/observium-isp-install.XXXXXX)
@@ -169,5 +169,17 @@ if [[ "$MODE" == --core-stage-check || "$MODE" == --core-stage-rehearse ]]; then
     python3 "$TMP/core/deploy-staged-core.py" --check --stage "$STAGE"
   else
     python3 "$TMP/core/deploy-staged-core.py" --rehearse --stage "$STAGE"
+  fi
+fi
+
+# Opt-in alert panel extension; external JS/CSS and a guarded navbar include.
+# Remains separate from --apply until functional testing on FLYNET is complete.
+if [[ "$MODE" == --alert-panel-check || "$MODE" == --alert-panel-apply ]]; then
+  fetch install-alert-panel.sh alerts/install-alert-panel.sh
+  bash -n "$TMP/alerts/install-alert-panel.sh"
+  if [[ "$MODE" == --alert-panel-check ]]; then
+    bash "$TMP/alerts/install-alert-panel.sh" --check
+  else
+    bash "$TMP/alerts/install-alert-panel.sh" --apply
   fi
 fi
